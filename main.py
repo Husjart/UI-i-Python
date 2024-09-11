@@ -18,7 +18,9 @@ btn_close = tk.Button(root, text="Luk vindet", command=close_window)
 
 
 button.grid(row=0, column=0, padx=10, pady=5)  # Placeres i 1. række, 1. kolonne
-btn_close.grid(row=0, column=1, padx=10, pady=5)  
+btn_close.grid(row=0, column=1, padx=10, pady=10)  
+
+
 
 
 # Start Tkinter event loop
