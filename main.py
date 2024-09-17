@@ -44,7 +44,15 @@ def select_script(event):
         script_name = listbox.get(selected_index)
         for name, path in button_info:
             if name == script_name:
-                update_text(f'Script: {name}')
+                # Vis indholdet af scriptet i tekstboksen
+                try:
+                    with open(path, 'r') as file:
+                        script_content = file.read()
+                        update_text(script_content)
+                except Exception as e:
+                    messagebox.showerror("Fejl", f"Kunne ikke læse scriptfilen: {str(e)}")
+                
+                # Opdater den globale scriptsti
                 current_script_path = path
                 break
 
@@ -54,17 +62,32 @@ def run_selected_script():
 
 # Opret vinduet
 root = tk.Tk()
-root.geometry('600x600')
+root.geometry('800x600')  # Øg vinduets størrelse for bedre visning
 root.title("Simpelt Tkinter eksempel")
 
+# Sæt baggrundsfarve til lyseblå
+root.configure(bg='#ADD8E6')  # Lyseblå farvekode
+
+# Hent skærmstørrelse
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
+# Beregn ønsket størrelse til tekstboksen
+text_box_width = int(screen_width * 0.25)  # 25% af skærmens bredde
+text_box_height = int(screen_height * 0.25)  # 25% af skærmens højde
+
 # Opret tekstbox i højre side
-text_box = tk.Text(root, width=40, height=10)
-text_box.grid(row=0, column=1, rowspan=4, padx=10, pady=5)
+text_box = tk.Text(root, width=text_box_width // 10, height=text_box_height // 20)  # Juster dimensioner
+text_box.grid(row=0, column=1, rowspan=3, padx=10, pady=5, sticky="nsew")
+
+# Opret en Frame til listbox og scrollbar
+listbox_frame = tk.Frame(root, bg='#ADD8E6')  # Lyseblå baggrundsfarve
+listbox_frame.grid(row=0, column=0, rowspan=3, padx=10, pady=5, sticky="ns")
 
 # Opret et canvas med scrollbar
-canvas = tk.Canvas(root)
-scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
-scrollable_frame = tk.Frame(canvas)
+canvas = tk.Canvas(listbox_frame, bg='#ADD8E6', highlightthickness=0)  # Lyseblå baggrundsfarve og ingen kantlinje
+scrollbar = tk.Scrollbar(listbox_frame, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas, bg='#ADD8E6')  # Lyseblå baggrundsfarve
 
 scrollable_frame.bind(
     "<Configure>",
@@ -74,9 +97,10 @@ scrollable_frame.bind(
 canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 canvas.configure(yscrollcommand=scrollbar.set)
 
-# Placér canvas og scrollbar i layoutet
-canvas.grid(row=0, column=0, rowspan=1, sticky="ns")
-scrollbar.grid(row=0, column=0, sticky="ns")
+# Placér canvas og scrollbar i listbox_frame
+canvas.grid(row=0, column=0, sticky="ns")
+scrollbar.grid(row=0, column=1, sticky="ns")
+
 
 # Liste over navne og tilhørende PowerShell-scripts
 button_info = [
@@ -100,13 +124,23 @@ listbox.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
 # Bind Listbox selection til funktionen
 listbox.bind('<<ListboxSelect>>', select_script)
 
-# Opret "Kør script" knappen under tekstboksen
-btn_run_script = tk.Button(root, text="Kør script", command=run_selected_script)
-btn_run_script.grid(row=4, column=1, padx=10, pady=5)
+# Opret knapperne under tekstboksen
+button_frame = tk.Frame(root, bg='#ADD8E6')  # Lyseblå baggrundsfarve
+button_frame.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+
+# Opret "Kør script" knappen
+btn_run_script = tk.Button(button_frame, text="Kør script", command=run_selected_script)
+btn_run_script.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
 
 # Opret "Åbn mappe" knappen
-btn_open_folder = tk.Button(root, text="Åbn mappe", command=open_script_folder)
-btn_open_folder.grid(row=5, column=1, padx=10, pady=5)
+btn_open_folder = tk.Button(button_frame, text="Åbn mappe", command=open_script_folder)
+btn_open_folder.pack(side=tk.TOP, fill=tk.X, padx=5, pady=2)
+
+# Juster kolonne- og rækkevægte for at få elementerne til at skalere korrekt
+root.grid_rowconfigure(0, weight=1)
+root.grid_rowconfigure(1, weight=1)
+root.grid_rowconfigure(2, weight=1)
+root.grid_columnconfigure(1, weight=1)
 
 # Start Tkinter event loop
 root.mainloop()
