@@ -52,33 +52,55 @@ def run_selected_script():
     
 # Opret vinduet
 root = tk.Tk()
-root.geometry('500x500')
+root.geometry('600x600')
 root.title("Simpelt Tkinter eksempel")
 
 # Opret tekstbox i højre side
 text_box = tk.Text(root, width=40, height=10)
 text_box.grid(row=0, column=1, rowspan=4, padx=10, pady=5)
 
-# Opret frame om knapperne
-frame = tk.Frame(root, borderwidth=5, relief="ridge")
-frame.grid(row=0, column=0, rowspan=6, padx=5, pady=5, sticky="ns")
+# Opret et canvas med scrollbar
+canvas = tk.Canvas(root)
+scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+scrollable_frame = tk.Frame(canvas)
 
-# Opret knapper inde i frame
-knap1 = tk.Button(frame, text="Backup", command=tekst1)
-knap1.grid(row=0, column=0, padx=2, pady=5)
-knap2 = tk.Button(frame, text="CMD", command=tekst2)
-knap2.grid(row=1, column=0, padx=2, pady=5)
-knap3 = tk.Button(frame, text="Ny mappe", command=tekst3)
-knap3.grid(row=2, column=0, padx=2, pady=5)
-knap4 = tk.Button(frame, text="Word", command=tekst4)
-knap4.grid(row=3, column=0, padx=2, pady=5)
-btn_close = tk.Button(frame, text="Luk vinduet", command=close_window)
-btn_close.grid(row=4, column=0, padx=2, pady=5)
+scrollable_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+)
+
+canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+canvas.configure(yscrollcommand=scrollbar.set)
+
+# Placér canvas og scrollbar i layoutet
+canvas.grid(row=0, column=0, rowspan=1, sticky="ns")
+scrollbar.grid(row=0, column=0, sticky="ns")
+
+# Liste over navne og tilhørende PowerShell-scripts
+button_info = [
+    ("Backup", tekst1),
+    ("CMD", tekst2),
+    ("Ny mappe", tekst3),
+    ("Word", tekst4),
+    # Du kan tilføje flere knapper og funktioner her
+]
+
+# Sortér knapnavnene alfabetisk
+button_info.sort(key=lambda x: x[0])
+
+# Opret knapper i det scrollbare frame efter alfabetisk rækkefølge
+for btn_name, btn_command in button_info:
+    button = tk.Button(scrollable_frame, text=btn_name, command=btn_command)
+    button.pack(padx=5, pady=5)
+    
+# Tilføj nogle ekstra dynamiske knapper, hvis der er mange
+for i in range(len(button_info), 100):
+    button = tk.Button(scrollable_frame, text=f"Knap {i+1}", command=on_button_click)
+    button.pack(padx=5, pady=5)
 
 # Opret "Kør script" knappen under tekstboksen
 btn_run_script = tk.Button(root, text="Kør script", command=run_selected_script)
 btn_run_script.grid(row=4, column=1, padx=10, pady=5)
-
 # Start Tkinter event loop
 root.mainloop()
 
