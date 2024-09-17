@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import subprocess
+import os
 
 # Global variabel til at gemme scriptstien
 current_script_path = None
@@ -25,31 +26,32 @@ def run_powershell_script(script_path):
             messagebox.showerror("Fejl", f"En fejl opstod: {str(e)}")
     else:
         messagebox.showerror("Fejl", "Intet script valgt")
-        
-def tekst1():
-    global current_script_path
-    update_text('Dette script kopierer filer fra backup1\nog over til backup2')
-    current_script_path = r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Backup script.ps1"
 
-def tekst2():
-    global current_script_path
-    update_text('Åbner CMD')
-    current_script_path = r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\open cmd.ps1"
+def open_script_folder():
+    if current_script_path:
+        folder_path = os.path.dirname(current_script_path)
+        try:
+            os.startfile(folder_path)
+        except Exception as e:
+            messagebox.showerror("Fejl", f"Kunne ikke åbne mappen: {str(e)}")
+    else:
+        messagebox.showerror("Fejl", "Intet script valgt")
 
-def tekst3():
+def select_script(event):
     global current_script_path
-    update_text('Genererer en ny mappe på C:\\.')
-    current_script_path = r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Ny mappe.ps1"
-
-def tekst4():
-    global current_script_path
-    update_text("Åbner Word")
-    current_script_path = r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Word.ps1"
+    selected_index = listbox.curselection()
+    if selected_index:
+        script_name = listbox.get(selected_index)
+        for name, path in button_info:
+            if name == script_name:
+                update_text(f'Script: {name}')
+                current_script_path = path
+                break
 
 def run_selected_script():
     # Brug den gemte sti til at køre det valgte script
     run_powershell_script(current_script_path)
-    
+
 # Opret vinduet
 root = tk.Tk()
 root.geometry('600x600')
@@ -78,40 +80,33 @@ scrollbar.grid(row=0, column=0, sticky="ns")
 
 # Liste over navne og tilhørende PowerShell-scripts
 button_info = [
-    ("Backup", tekst1),
-    ("CMD", tekst2),
-    ("Ny mappe", tekst3),
-    ("Word", tekst4),
-    # Du kan tilføje flere knapper og funktioner her
+    ("Backup", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Backup script.ps1"),
+    ("CMD", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\open cmd.ps1"),
+    ("Ny mappe", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Ny mappe.ps1"),
+    ("Word", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\Word.ps1"),
+    ("Opret bruger", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\1_CREATE_USERS.ps1"),
+    ("Filer til VM", r"C:\Users\Morten M. Hansen\Desktop\Powerscripts\FiletoVM.ps1"),
 ]
 
-# Sortér knapnavnene alfabetisk
+# Sortér navne alfabetisk for listbox
 button_info.sort(key=lambda x: x[0])
 
-# Opret knapper i det scrollbare frame efter alfabetisk rækkefølge
-for btn_name, btn_command in button_info:
-    button = tk.Button(scrollable_frame, text=btn_name, command=btn_command)
-    button.pack(padx=5, pady=5)
-    
-# Tilføj nogle ekstra dynamiske knapper, hvis der er mange
-for i in range(len(button_info), 100):
-    button = tk.Button(scrollable_frame, text=f"Knap {i+1}", command=on_button_click)
-    button.pack(padx=5, pady=5)
+# Opret en Listbox i det scrollbare frame
+listbox = tk.Listbox(scrollable_frame)
+for name, path in button_info:
+    listbox.insert(tk.END, name)
+listbox.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+
+# Bind Listbox selection til funktionen
+listbox.bind('<<ListboxSelect>>', select_script)
 
 # Opret "Kør script" knappen under tekstboksen
 btn_run_script = tk.Button(root, text="Kør script", command=run_selected_script)
 btn_run_script.grid(row=4, column=1, padx=10, pady=5)
+
+# Opret "Åbn mappe" knappen
+btn_open_folder = tk.Button(root, text="Åbn mappe", command=open_script_folder)
+btn_open_folder.grid(row=5, column=1, padx=10, pady=5)
+
 # Start Tkinter event loop
 root.mainloop()
-
-
-
-"""DUPES
-button = tk.Button(root, text="Klik på mig", command=on_button_click)
-
-button.grid(row=0, column=0, padx=2, pady=0)
-
-def tekst1():
-    update_text('tilføj tekst')
-    run_powershell_script(r"indsæt sti")
-"""
